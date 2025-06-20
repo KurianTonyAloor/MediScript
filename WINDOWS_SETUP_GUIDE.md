@@ -47,11 +47,22 @@ http://localhost:5000
 3. **Verify**: Use QR codes to verify prescription authenticity
 
 ### 4. Mobile Installation (PWA)
-On your phone:
-1. Open the app in your mobile browser: `http://localhost:5000`
-2. Tap the browser menu (3 dots)
-3. Select "Add to Home Screen" or "Install App"
-4. The app will install like a native app on your phone
+
+**Step 1: Find Your Computer's IP Address**
+Double-click `find-ip.bat` to see your computer's IP address
+
+**Step 2: Connect Your Phone**
+1. Make sure your phone is on the same WiFi network as your computer
+2. Open your phone's browser and go to: `http://[your-ip-address]:5000`
+   - Example: `http://192.168.1.100:5000`
+3. Tap the browser menu (3 dots)
+4. Select "Add to Home Screen" or "Install App"
+5. The app will install like a native app on your phone
+
+**Troubleshooting Mobile Access:**
+- Ensure both devices are on the same WiFi network
+- Check Windows Firewall isn't blocking port 5000
+- Try temporarily disabling Windows Firewall to test
 
 ## Features
 - ✅ **Completely Offline**: Works without internet connection
