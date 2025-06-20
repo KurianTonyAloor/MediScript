@@ -11,9 +11,10 @@ interface SimpleMedicationFormProps {
   medication?: Medication | null;
   onSave: (medication: Medication) => void;
   onCancel: () => void;
+  isOpen?: boolean;
 }
 
-export default function SimpleMedicationForm({ medication, onSave, onCancel }: SimpleMedicationFormProps) {
+export default function SimpleMedicationForm({ medication, onSave, onCancel, isOpen = true }: SimpleMedicationFormProps) {
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -83,8 +84,10 @@ export default function SimpleMedicationForm({ medication, onSave, onCancel }: S
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={true} onOpenChange={onCancel}>
+    <Dialog open={isOpen} onOpenChange={onCancel}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>

@@ -22,6 +22,7 @@ export default function PrescriptionForm() {
   const [showMedicationForm, setShowMedicationForm] = useState(false);
   const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
   const [doctorProfile] = useLocalStorage<DoctorProfile | null>("doctorProfile", null);
+
   const { toast } = useToast();
 
   const form = useForm<Patient>({
@@ -42,6 +43,7 @@ export default function PrescriptionForm() {
       followupDate: "",
       followupTime: "",
     },
+    mode: "onBlur", // Prevent unnecessary re-renders
   });
 
   const calculateAge = (dob: string) => {
@@ -59,6 +61,7 @@ export default function PrescriptionForm() {
   };
 
   const addMedication = (medication: Medication) => {
+    console.log("Adding medication:", medication);
     if (editingMedication) {
       setMedications(prev => prev.map(med => med.id === medication.id ? medication : med));
       setEditingMedication(null);
@@ -66,6 +69,10 @@ export default function PrescriptionForm() {
       setMedications(prev => [...prev, medication]);
     }
     setShowMedicationForm(false);
+    
+    // Ensure form values are preserved
+    const currentValues = form.getValues();
+    console.log("Current form values after adding medication:", currentValues);
   };
 
   const editMedication = (medication: Medication) => {
@@ -131,9 +138,6 @@ export default function PrescriptionForm() {
         title: "Prescription Generated",
         description: "PDF has been generated and saved successfully.",
       });
-
-      // Clear form
-      clearForm();
     } catch (error) {
       console.error("Error generating prescription:", error);
       toast({
@@ -498,16 +502,16 @@ export default function PrescriptionForm() {
       </div>
 
       {/* Medication Form Modal */}
-      {showMedicationForm && (
-        <SimpleMedicationForm
-          medication={editingMedication}
-          onSave={addMedication}
-          onCancel={() => {
-            setShowMedicationForm(false);
-            setEditingMedication(null);
-          }}
-        />
-      )}
+      <SimpleMedicationForm
+        key={showMedicationForm ? 'open' : 'closed'}
+        medication={showMedicationForm ? editingMedication : null}
+        onSave={showMedicationForm ? addMedication : () => {}}
+        onCancel={() => {
+          setShowMedicationForm(false);
+          setEditingMedication(null);
+        }}
+        isOpen={showMedicationForm}
+      />
     </div>
   );
 }
