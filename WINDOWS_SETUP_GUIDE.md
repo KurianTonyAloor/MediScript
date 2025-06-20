@@ -4,9 +4,13 @@
 Your MedScript application is now ready to use! Follow these simple steps:
 
 ### 1. Start the Application
+**Easy Method (Recommended):**
+Double-click the `start-medscript.bat` file in your project folder
+
+**Alternative Method:**
 Open Command Prompt or PowerShell in your project folder and run:
 ```bash
-npm run dev
+npx tsx server/index.ts
 ```
 
 ### 2. Access the Application
