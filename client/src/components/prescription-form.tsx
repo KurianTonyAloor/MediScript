@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import MedicationModal from "./medication-modal";
+import { Label } from "@/components/ui/label";
 import { patientSchema, type Patient, type Medication, type DoctorProfile } from "@shared/schema";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generatePDF } from "@/lib/pdf-generator";
@@ -19,8 +19,16 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function PrescriptionForm() {
   const [medications, setMedications] = useState<Medication[]>([]);
-  const [showMedicationForm, setShowMedicationForm] = useState(false);
-  const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
+  const [currentMedication, setCurrentMedication] = useState({
+    name: "",
+    strength: "",
+    dose: "",
+    route: "",
+    frequency: "",
+    duration: "",
+    quantity: "",
+    instructions: "",
+  });
   const [doctorProfile] = useLocalStorage<DoctorProfile | null>("doctorProfile", null);
 
   const { toast } = useToast();
@@ -33,10 +41,6 @@ export default function PrescriptionForm() {
   useEffect(() => {
     console.log("Medications changed:", medications);
   }, [medications]);
-
-  useEffect(() => {
-    console.log("Show medication form changed:", showMedicationForm);
-  }, [showMedicationForm]);
 
   const form = useForm<Patient>({
     resolver: zodResolver(patientSchema),
@@ -73,29 +77,45 @@ export default function PrescriptionForm() {
     return `${age} years`;
   };
 
-  const addMedication = (medication: Medication) => {
-    console.log("BEFORE adding medication - form values:", form.getValues());
-    console.log("Adding medication:", medication);
-    
-    if (editingMedication) {
-      setMedications(prev => prev.map(med => med.id === medication.id ? medication : med));
-      setEditingMedication(null);
-    } else {
-      setMedications(prev => [...prev, medication]);
+  const addCurrentMedication = () => {
+    // Validate required fields
+    if (!currentMedication.name || !currentMedication.strength || !currentMedication.dose || 
+        !currentMedication.route || !currentMedication.frequency || !currentMedication.duration) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required medication fields",
+        variant: "destructive",
+      });
+      return;
     }
+
+    const newMedication: Medication = {
+      ...currentMedication,
+      id: `med_${Date.now()}`,
+    };
     
-    console.log("AFTER setting medications - form values:", form.getValues());
-    setShowMedicationForm(false);
+    setMedications(prev => [...prev, newMedication]);
     
-    // Force a delay to check if form resets after state changes
-    setTimeout(() => {
-      console.log("AFTER 100ms delay - form values:", form.getValues());
-    }, 100);
+    // Clear current medication form
+    setCurrentMedication({
+      name: "",
+      strength: "",
+      dose: "",
+      route: "",
+      frequency: "",
+      duration: "",
+      quantity: "",
+      instructions: "",
+    });
+    
+    toast({
+      title: "Success",
+      description: "Medication added successfully",
+    });
   };
 
-  const editMedication = (medication: Medication) => {
-    setEditingMedication(medication);
-    setShowMedicationForm(true);
+  const updateCurrentMedication = (field: string, value: string) => {
+    setCurrentMedication(prev => ({ ...prev, [field]: value }));
   };
 
   const deleteMedication = (id: string) => {
@@ -417,23 +437,138 @@ export default function PrescriptionForm() {
             {/* Medications Card */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">Medications</CardTitle>
-                  <Button onClick={() => setShowMedicationForm(true)} className="bg-medical-blue hover:bg-blue-700">
+                <CardTitle className="text-xl">Medications</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Add New Medication Form */}
+                <div className="border border-gray-200 rounded-lg p-4 bg-blue-50">
+                  <h3 className="font-medium text-gray-900 mb-4">Add New Medication</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <Label htmlFor="med-name">Drug Name *</Label>
+                      <Input
+                        id="med-name"
+                        value={currentMedication.name}
+                        onChange={(e) => updateCurrentMedication("name", e.target.value)}
+                        placeholder="Enter drug name"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="med-strength">Strength *</Label>
+                      <Input
+                        id="med-strength"
+                        value={currentMedication.strength}
+                        onChange={(e) => updateCurrentMedication("strength", e.target.value)}
+                        placeholder="e.g., 500mg"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="med-dose">Dose *</Label>
+                      <Input
+                        id="med-dose"
+                        value={currentMedication.dose}
+                        onChange={(e) => updateCurrentMedication("dose", e.target.value)}
+                        placeholder="e.g., 1 tablet"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div>
+                      <Label htmlFor="med-route">Route *</Label>
+                      <select
+                        id="med-route"
+                        value={currentMedication.route}
+                        onChange={(e) => updateCurrentMedication("route", e.target.value)}
+                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select route</option>
+                        <option value="Oral">Oral</option>
+                        <option value="IV">IV</option>
+                        <option value="IM">IM</option>
+                        <option value="SC">SC</option>
+                        <option value="Topical">Topical</option>
+                        <option value="Inhaled">Inhaled</option>
+                        <option value="Rectal">Rectal</option>
+                        <option value="Nasal">Nasal</option>
+                        <option value="Ophthalmic">Ophthalmic</option>
+                        <option value="Otic">Otic</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="med-frequency">Frequency *</Label>
+                      <select
+                        id="med-frequency"
+                        value={currentMedication.frequency}
+                        onChange={(e) => updateCurrentMedication("frequency", e.target.value)}
+                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select frequency</option>
+                        <option value="Once daily">Once daily</option>
+                        <option value="Twice daily">Twice daily</option>
+                        <option value="Three times daily">Three times daily</option>
+                        <option value="Four times daily">Four times daily</option>
+                        <option value="Every 4 hours">Every 4 hours</option>
+                        <option value="Every 6 hours">Every 6 hours</option>
+                        <option value="Every 8 hours">Every 8 hours</option>
+                        <option value="Every 12 hours">Every 12 hours</option>
+                        <option value="As needed">As needed</option>
+                        <option value="Before meals">Before meals</option>
+                        <option value="After meals">After meals</option>
+                        <option value="At bedtime">At bedtime</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="med-duration">Duration *</Label>
+                      <Input
+                        id="med-duration"
+                        value={currentMedication.duration}
+                        onChange={(e) => updateCurrentMedication("duration", e.target.value)}
+                        placeholder="e.g., 7 days"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="med-quantity">Quantity</Label>
+                      <Input
+                        id="med-quantity"
+                        value={currentMedication.quantity}
+                        onChange={(e) => updateCurrentMedication("quantity", e.target.value)}
+                        placeholder="e.g., 14 tablets"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <Label htmlFor="med-instructions">Special Instructions</Label>
+                    <Textarea
+                      id="med-instructions"
+                      value={currentMedication.instructions}
+                      onChange={(e) => updateCurrentMedication("instructions", e.target.value)}
+                      placeholder="Additional instructions for the patient"
+                      className="mt-1"
+                      rows={2}
+                    />
+                  </div>
+
+                  <Button 
+                    onClick={addCurrentMedication}
+                    className="bg-medical-blue hover:bg-blue-700"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Medication
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {medications.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-lg">No medications added yet</p>
-                    <p className="text-sm">Click "Add Medication" to get started</p>
-                  </div>
-                ) : (
+
+                {/* Existing Medications List */}
+                {medications.length > 0 && (
                   <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900">Added Medications ({medications.length})</h3>
                     {medications.map((medication) => (
                       <div key={medication.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between">
@@ -478,9 +613,6 @@ export default function PrescriptionForm() {
                             )}
                           </div>
                           <div className="flex space-x-2 ml-4">
-                            <Button variant="ghost" size="icon" onClick={() => editMedication(medication)}>
-                              <FileText className="w-4 h-4" />
-                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => deleteMedication(medication.id)}>
                               <RotateCcw className="w-4 h-4 text-red-500" />
                             </Button>
@@ -519,16 +651,6 @@ export default function PrescriptionForm() {
         </Card>
       </div>
 
-      {/* Medication Form Modal */}
-      <MedicationModal
-        isOpen={showMedicationForm}
-        medication={editingMedication}
-        onSave={addMedication}
-        onClose={() => {
-          setShowMedicationForm(false);
-          setEditingMedication(null);
-        }}
-      />
     </div>
   );
 }
