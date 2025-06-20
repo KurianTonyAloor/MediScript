@@ -4,14 +4,24 @@
 Your MedScript application is now ready to use! Follow these simple steps:
 
 ### 1. Start the Application
-**Easy Method (Recommended):**
-Double-click the `start-medscript.bat` file in your project folder
 
-**Alternative Method:**
-Open Command Prompt or PowerShell in your project folder and run:
-```bash
+**Method 1 - PowerShell (Recommended):**
+Right-click in your project folder, select "Open PowerShell window here", then run:
+```powershell
+powershell -ExecutionPolicy Bypass -File start-medscript.ps1
+```
+
+**Method 2 - Command Prompt:**
+Open Command Prompt in your project folder and run:
+```cmd
+set NODE_ENV=development && npx tsx server/index.ts
+```
+
+**Method 3 - Direct Command:**
+```cmd
 npx tsx server/index.ts
 ```
+(This works without NODE_ENV - the app will still function properly)
 
 ### 2. Access the Application
 Open your web browser and go to:
