@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, FileText, Share, Save, RotateCcw } from "lucide-react";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import SimpleMedicationForm from "./simple-medication-form";
+import MedicationModal from "./medication-modal";
 import { patientSchema, type Patient, type Medication, type DoctorProfile } from "@shared/schema";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { generatePDF } from "@/lib/pdf-generator";
@@ -24,6 +24,19 @@ export default function PrescriptionForm() {
   const [doctorProfile] = useLocalStorage<DoctorProfile | null>("doctorProfile", null);
 
   const { toast } = useToast();
+
+  // Debug form state changes
+  useEffect(() => {
+    console.log("Component mounted/re-mounted");
+  }, []);
+
+  useEffect(() => {
+    console.log("Medications changed:", medications);
+  }, [medications]);
+
+  useEffect(() => {
+    console.log("Show medication form changed:", showMedicationForm);
+  }, [showMedicationForm]);
 
   const form = useForm<Patient>({
     resolver: zodResolver(patientSchema),
@@ -61,18 +74,23 @@ export default function PrescriptionForm() {
   };
 
   const addMedication = (medication: Medication) => {
+    console.log("BEFORE adding medication - form values:", form.getValues());
     console.log("Adding medication:", medication);
+    
     if (editingMedication) {
       setMedications(prev => prev.map(med => med.id === medication.id ? medication : med));
       setEditingMedication(null);
     } else {
       setMedications(prev => [...prev, medication]);
     }
+    
+    console.log("AFTER setting medications - form values:", form.getValues());
     setShowMedicationForm(false);
     
-    // Ensure form values are preserved
-    const currentValues = form.getValues();
-    console.log("Current form values after adding medication:", currentValues);
+    // Force a delay to check if form resets after state changes
+    setTimeout(() => {
+      console.log("AFTER 100ms delay - form values:", form.getValues());
+    }, 100);
   };
 
   const editMedication = (medication: Medication) => {
@@ -502,15 +520,14 @@ export default function PrescriptionForm() {
       </div>
 
       {/* Medication Form Modal */}
-      <SimpleMedicationForm
-        key={showMedicationForm ? 'open' : 'closed'}
-        medication={showMedicationForm ? editingMedication : null}
-        onSave={showMedicationForm ? addMedication : () => {}}
-        onCancel={() => {
+      <MedicationModal
+        isOpen={showMedicationForm}
+        medication={editingMedication}
+        onSave={addMedication}
+        onClose={() => {
           setShowMedicationForm(false);
           setEditingMedication(null);
         }}
-        isOpen={showMedicationForm}
       />
     </div>
   );
