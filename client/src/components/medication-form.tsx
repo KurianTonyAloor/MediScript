@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { medicationSchema, type Medication } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 interface MedicationFormProps {
   medication?: Medication | null;
@@ -16,6 +17,8 @@ interface MedicationFormProps {
 }
 
 export default function MedicationForm({ medication, onSave, onCancel }: MedicationFormProps) {
+  const { toast } = useToast();
+  
   const form = useForm<Medication>({
     resolver: zodResolver(medicationSchema),
     defaultValues: medication || {
@@ -32,11 +35,23 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
   });
 
   const handleSave = (data: Medication) => {
-    const medicationData = {
-      ...data,
-      id: medication?.id || `med_${Date.now()}`,
-    };
-    onSave(medicationData);
+    try {
+      const medicationData = {
+        ...data,
+        id: medication?.id || `med_${Date.now()}`,
+      };
+      onSave(medicationData);
+      toast({
+        title: "Success",
+        description: "Medication saved successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save medication. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -99,7 +114,7 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Route *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select Route" />
@@ -124,7 +139,7 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Frequency *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select Frequency" />
