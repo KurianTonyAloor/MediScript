@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { medicationSchema, type Medication } from "@shared/schema";
-import { useToast } from "@/hooks/use-toast";
 
 interface MedicationFormProps {
   medication?: Medication | null;
@@ -17,8 +16,6 @@ interface MedicationFormProps {
 }
 
 export default function MedicationForm({ medication, onSave, onCancel }: MedicationFormProps) {
-  const { toast } = useToast();
-  
   const form = useForm<Medication>({
     resolver: zodResolver(medicationSchema),
     defaultValues: medication || {
@@ -34,23 +31,19 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
     },
   });
 
-  const handleSave = (data: Medication) => {
+  const handleSave = async (data: Medication) => {
     try {
       const medicationData = {
         ...data,
         id: medication?.id || `med_${Date.now()}`,
       };
+
+      console.log("✅ Saving medication:", medicationData); // Debug log
+
+      // Important: Do not perform full page reloads or reset states here.
       onSave(medicationData);
-      toast({
-        title: "Success",
-        description: "Medication saved successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save medication. Please try again.",
-        variant: "destructive",
-      });
+    } catch (err) {
+      console.error("❌ Error while saving medication", err);
     }
   };
 
@@ -64,8 +57,17 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSave)}
+            className="space-y-6"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+                e.preventDefault(); // Avoid accidental reload or premature submit
+              }
+            }}
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* All Form Fields remain the same */}
               <FormField
                 control={form.control}
                 name="name"
@@ -79,7 +81,6 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="strength"
@@ -93,7 +94,6 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="dose"
@@ -107,14 +107,13 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="route"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Route *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select Route" />
@@ -132,14 +131,13 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="frequency"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Frequency *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select Frequency" />
@@ -157,7 +155,6 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="duration"
@@ -171,7 +168,6 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="quantity"
@@ -185,7 +181,6 @@ export default function MedicationForm({ medication, onSave, onCancel }: Medicat
                   </FormItem>
                 )}
               />
-
               <div className="md:col-span-2">
                 <FormField
                   control={form.control}

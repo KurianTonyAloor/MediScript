@@ -6,7 +6,7 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
   "categories": ["medical", "productivity", "health"],
@@ -15,13 +15,15 @@
       "src": "/screenshot-wide.png",
       "sizes": "1280x720",
       "type": "image/png",
-      "form_factor": "wide"
+      "form_factor": "wide",
+      "label": "MedScript Dashboard"
     },
     {
       "src": "/screenshot-narrow.png", 
       "sizes": "750x1334",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "MedScript Mobile View"
     }
   ],
   "icons": [
@@ -36,6 +38,11 @@
       "sizes": "512x512", 
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
     }
   ],
   "shortcuts": [
@@ -61,5 +68,10 @@
       "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     }
   ],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "display_override": ["standalone", "minimal-ui"],
+  "launch_handler": {
+    "client_mode": "auto"
+  }
 }

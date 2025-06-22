@@ -192,6 +192,7 @@ export default function InlineMedicationForm({ medications, onMedicationsChange 
         </div>
 
         <Button 
+          type="button" // ✅ THIS FIXES THE RESET ISSUE
           onClick={addCurrentMedication}
           className="bg-medical-blue hover:bg-blue-700"
         >
