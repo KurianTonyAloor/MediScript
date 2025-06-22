@@ -72,7 +72,7 @@ plugins.push(
         "@assets": path.resolve(__dirname, "attached_assets"),
       },
     },
-    root: path.resolve(__dirname, "client"),
+    root: __dirname,
     build: {
       outDir: path.resolve(__dirname, "dist/public"),
       emptyOutDir: true,
